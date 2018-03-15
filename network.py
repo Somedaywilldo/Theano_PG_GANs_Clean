@@ -528,11 +528,11 @@ def D_paper(
 
     net = LN(WS(Conv2DLayer(GD(net), name='D1b', num_filters=nf(1), filter_size=3, pad=1, nonlinearity=lrelu, W=ilrelu)))
     net = LN(WS(Conv2DLayer(GD(net), name='D1a', num_filters=nf(0), filter_size=4, pad=0, nonlinearity=lrelu, W=ilrelu)))
-
+'''
     if mbdisc_kernels:
         import minibatch_discrimination
         net = minibatch_discrimination.MinibatchLayer(net, name='Dmd', num_kernels=mbdisc_kernels)
-
+'''
     output_layers = [WS(DenseLayer(net, name='Dscores', num_units=1, nonlinearity=linear, W=ilinear))]
     if label_size:
         output_layers += [WS(DenseLayer(net, name='Dlabels', num_units=label_size, nonlinearity=linear, W=ilinear))]
