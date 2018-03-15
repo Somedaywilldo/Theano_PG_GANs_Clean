@@ -444,7 +444,7 @@ def imgapi_example(run_id, snapshot):
     misc.save_image(images[0], os.path.join(config.result_dir, 'debug.png'), drange=[0,255])
 
 #----------------------------------------------------------------------------
-
+'''
 def interpolate_latents(
     run_id,
     snapshot,
@@ -694,7 +694,7 @@ def calc_mnistrgb_histogram(run_id, num_images=25600, log='histogram.txt', minib
         print 'mean %-8.4f kld %-8.4f' % (mean, kld)
 
 #----------------------------------------------------------------------------
-
+'''
 if __name__ == "__main__":
     #指定随机种子
     np.random.seed(config.random_seed)
