@@ -246,7 +246,7 @@ def train_gan(
             D_updates = adam(D_loss, D.trainable_params(), 
                             learning_rate=D_lrate, beta1=adam_beta1, beta2=adam_beta2, 
                             epsilon=adam_epsilon).items()
-
+            '''
             # Compile training funcs.
             # G、D的训练函数可以相同亦可以不同
             if not separate_funcs:
@@ -256,15 +256,16 @@ def train_gan(
                     updates=G_updates+D_updates+Gs.updates,
                     on_unused_input='ignore')
             else:
-                D_train_fn = theano.function(
-                    [real_images_var, real_labels_var, fake_latents_var, fake_labels_var],
-                    [G_loss, D_loss, real_scores_out, fake_scores_out],
-                    updates=D_updates, on_unused_input='ignore')
-                G_train_fn = theano.function(
-                    [fake_latents_var, fake_labels_var],
-                    [],
-                    updates=G_updates+Gs.updates, on_unused_input='ignore')
-
+            '''
+            D_train_fn = theano.function(
+                [real_images_var, real_labels_var, fake_latents_var, fake_labels_var],
+                [G_loss, D_loss, real_scores_out, fake_scores_out],
+                updates=D_updates, on_unused_input='ignore')
+            G_train_fn = theano.function(
+                [fake_latents_var, fake_labels_var],
+                [],
+                updates=G_updates+Gs.updates, on_unused_input='ignore')
+        '''
         # Invoke training funcs.
         if not separate_funcs:
             assert D_training_repeats == 1
@@ -273,12 +274,13 @@ def train_gan(
             cur_nimg += minibatch_size
             tick_train_out.append(mb_train_out)
         else:
-            for idx in xrange(D_training_repeats):
-                mb_reals, mb_labels = training_set.get_random_minibatch(minibatch_size, lod=cur_lod, shrink_based_on_lod=True, labels=True)
-                mb_train_out = D_train_fn(mb_reals, mb_labels, random_latents(minibatch_size, G.input_shape), random_labels(minibatch_size, training_set))
-                cur_nimg += minibatch_size
-                tick_train_out.append(mb_train_out)
-            G_train_fn(random_latents(minibatch_size, G.input_shape), random_labels(minibatch_size, training_set))
+        '''
+        for idx in xrange(D_training_repeats):
+            mb_reals, mb_labels = training_set.get_random_minibatch(minibatch_size, lod=cur_lod, shrink_based_on_lod=True, labels=True)
+            mb_train_out = D_train_fn(mb_reals, mb_labels, random_latents(minibatch_size, G.input_shape), random_labels(minibatch_size, training_set))
+            cur_nimg += minibatch_size
+            tick_train_out.append(mb_train_out)
+        G_train_fn(random_latents(minibatch_size, G.input_shape), random_labels(minibatch_size, training_set))
 
         # Fade in D noise if we're close to becoming unstable
         fake_score_cur = np.clip(np.mean(mb_train_out[1]), 0.0, 1.0)
