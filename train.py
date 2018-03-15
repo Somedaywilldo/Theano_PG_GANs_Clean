@@ -368,6 +368,8 @@ def evaluate_loss(
         D_loss += L2(real_scores_out, 0) * iwass_epsilon # additional penalty term to keep the scores from drifting too far from zero
         fake_scores_out = fake_scores_out - real_scores_out # reporting tweak
         real_scores_out = T.constant(0) # reporting tweak
+    
+    return G_loss, D_loss, real_scores_out, fake_scores_out
 '''
     if type == 'lsgan': # LSGAN
         G_loss = L2(fake_scores_out, 0)
@@ -377,7 +379,8 @@ def evaluate_loss(
         G_loss += crossent(fake_labels_out, fake_labels_in) * cond_weight
         D_loss += (crossent(real_labels_out, real_labels_in) + crossent(fake_labels_out, fake_labels_in)) * cond_weight
 '''
-    return G_loss, D_loss, real_scores_out, fake_scores_out
+
+   
 
 
 if __name__ == "__main__":
