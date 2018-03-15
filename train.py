@@ -117,9 +117,12 @@ def train_gan(
 
     # Load dataset and build networks.
     training_set, drange_orig = load_dataset()
-    
-    G = network.Network(num_channels=training_set.shape[1], resolution=training_set.shape[2], label_size=training_set.labels.shape[1], **config.G)
-    D = network.Network(num_channels=training_set.shape[1], resolution=training_set.shape[2], label_size=training_set.labels.shape[1], **config.D)
+    if resume_network_pkl:
+        print 'Resuming', resume_network_pkl
+        G, D, _ = misc.load_pkl(os.path.join(config.result_dir, resume_network_pkl))
+    else:
+        G = network.Network(num_channels=training_set.shape[1], resolution=training_set.shape[2], label_size=training_set.labels.shape[1], **config.G)
+        D = network.Network(num_channels=training_set.shape[1], resolution=training_set.shape[2], label_size=training_set.labels.shape[1], **config.D)
     Gs = G.create_temporally_smoothed_version(beta=G_smoothing, explicit_updates=True)
     misc.print_network_topology_info(G.output_layers)
     misc.print_network_topology_info(D.output_layers)
@@ -131,6 +134,18 @@ def train_gan(
             image_grid_size = np.clip(1920 / w, 3, 16), np.clip(1080 / h, 2, 16)
         example_real_images, snapshot_fake_labels = training_set.get_random_minibatch(np.prod(image_grid_size), labels=True)
         snapshot_fake_latents = random_latents(np.prod(image_grid_size), G.input_shape)
+    elif image_grid_type == 'category':
+        W = training_set.labels.shape[1]
+        H = W if image_grid_size is None else image_grid_size[1]
+        image_grid_size = W, H
+        snapshot_fake_latents = random_latents(W*H, G.input_shape)
+        snapshot_fake_labels = np.zeros((W*H, W), dtype=training_set.labels.dtype)
+        example_real_images = np.zeros((W*H,) + training_set.shape[1:], dtype=training_set.dtype)
+        for x in xrange(W):
+            snapshot_fake_labels[x::W, x] = 1.0
+            indices = np.arange(training_set.shape[0])[training_set.labels[:,x] != 0]
+            for y in xrange(H):
+                example_real_images[x + y * W] = training_set.h5_lods[0][np.random.choice(indices)]
     else:
         raise ValueError('Invalid image_grid_type', image_grid_type)
 
@@ -156,6 +171,18 @@ def train_gan(
     min_lod, max_lod = -1.0, -2.0
     fake_score_avg = 0.0
 
+    if config.D.get('mbdisc_kernels', None):
+        print 'Initializing minibatch discrimination...'
+        #现有精细度
+        if hasattr(D, 'cur_lod'): D.cur_lod.set_value(np.float32(initial_lod))
+        D.eval(real_images_var, deterministic=False, init=True)
+        init_layers = lasagne.layers.get_all_layers(D.output_layers)
+        init_updates = [update for layer in init_layers for update in getattr(layer, 'init_updates', [])]
+        init_fn = theano.function(inputs=[real_images_var], outputs=None, updates=init_updates)
+        init_reals = training_set.get_random_minibatch(500, lod=initial_lod)
+        init_reals = misc.adjust_dynamic_range(init_reals, drange_orig, drange_net)
+        init_fn(init_reals)
+        del init_reals
 
     # Save example images.
     snapshot_fake_images = gen_fn(snapshot_fake_latents, snapshot_fake_labels)

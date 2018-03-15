@@ -41,7 +41,7 @@ dataset = None
 
 train = dict(                               # Training parameters:
     func                    = 'train_gan',  # Main training func.
-    separate_funcs          = False,         # Alternate between training generator and discriminator?
+    separate_funcs          = True,         # Alternate between training generator and discriminator?
     #修改为False减少了代码量
     D_training_repeats      = 1,            # n_{critic}
     G_learning_rate_max     = 0.001,        # \alpha
