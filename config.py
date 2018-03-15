@@ -15,7 +15,7 @@ result_dir = 'results'
 # Theano config.
 
 theano_flags                                = dict()
-theano_flags['device']                      = 'CUDA'            # New gpuarray backend.
+theano_flags['device']                      = 'cuda'            # New gpuarray backend.
 #theano_flags['device']                      = 'gpu'             # Old CUDA backend.
 theano_flags['force_device']                = 'True'            # Use GPU or die -- never fall back to CPU.
 theano_flags['dnn.enabled']                 = 'True'            # Use cuDNN or die -- never fall back to custom convolution ops.
