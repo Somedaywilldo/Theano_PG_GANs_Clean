@@ -110,7 +110,8 @@ def train_gan(
     image_snapshot_ticks    = 4,
     network_snapshot_ticks  = 40,
     image_grid_type         = 'default',
-    resume_network_pkl      = '006-celeb128-progressive-growing/network-snapshot-002009.pkl',
+    #resume_network_pkl      = '006-celeb128-progressive-growing/network-snapshot-002009.pkl',
+    resume_network_pkl      = None,
     resume_kimg             = 2059.8,
     resume_time             = 0.0):
 
