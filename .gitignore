@@ -1,0 +1,6 @@
+#ignore dataset
+/datasets/
+*.h5
+*.pyc
+*.pkl
+/results/
