@@ -368,7 +368,7 @@ def evaluate_loss(
         D_loss += L2(real_scores_out, 0) * iwass_epsilon # additional penalty term to keep the scores from drifting too far from zero
         fake_scores_out = fake_scores_out - real_scores_out # reporting tweak
         real_scores_out = T.constant(0) # reporting tweak
-
+'''
     if type == 'lsgan': # LSGAN
         G_loss = L2(fake_scores_out, 0)
         D_loss = L2(real_scores_out, 0) + L2(fake_scores_out, 1) * L2_fake_weight
@@ -376,75 +376,9 @@ def evaluate_loss(
     if cond_type == 'acgan': # AC-GAN
         G_loss += crossent(fake_labels_out, fake_labels_in) * cond_weight
         D_loss += (crossent(real_labels_out, real_labels_in) + crossent(fake_labels_out, fake_labels_in)) * cond_weight
-
+'''
     return G_loss, D_loss, real_scores_out, fake_scores_out
 
-#----------------------------------------------------------------------------
-# Image generation API.
-'''
-def imgapi_load_net(run_id, snapshot=None, random_seed=1000, num_example_latents=1000, load_dataset=True, compile_gen_fn=True):
-    class Net: pass
-    net = Net()
-    net.result_subdir = misc.locate_result_subdir(run_id)
-    net.network_pkl = misc.locate_network_pkl(net.result_subdir, snapshot)
-    _, _, net.G = misc.load_pkl(net.network_pkl)
-
-    # Generate example latents and labels.
-    np.random.seed(random_seed)
-    net.example_latents = random_latents(num_example_latents, net.G.input_shape)
-    net.example_labels = np.zeros((num_example_latents, 0), dtype=np.float32)
-    net.dynamic_range = [0, 255]
-    if load_dataset:
-        imgapi_load_dataset(net)
-
-    # Compile Theano func.
-    net.latents_var = T.TensorType('float32', [False] * len(net.example_latents.shape))('latents_var')
-    net.labels_var  = T.TensorType('float32', [False] * len(net.example_labels.shape)) ('labels_var')
-
-    if hasattr(net.G, 'cur_lod'):
-        net.lod = net.G.cur_lod.get_value()
-        net.images_expr = net.G.eval(net.latents_var, net.labels_var, min_lod=net.lod, max_lod=net.lod, ignore_unused_inputs=True)
-    else:
-        net.lod = 0.0
-        net.images_expr = net.G.eval(net.latents_var, net.labels_var, ignore_unused_inputs=True)
-
-    net.images_expr = misc.adjust_dynamic_range(net.images_expr, [-1,1], net.dynamic_range)
-    if compile_gen_fn:
-        imgapi_compile_gen_fn(net)
-    return net
-
-def imgapi_load_dataset(net):
-    net.training_set, net.dynamic_range = load_dataset_for_previous_run(net.result_subdir, verbose=False)
-    net.example_labels = net.training_set.labels
-    if len(net.example_labels) < len(net.example_latents):
-        reps = (len(net.example_latents) - 1) / len(net.example_labels) + 1
-        net.example_labels = np.concatenate([net.example_labels] * reps)[:len(net.example_latents)]
-
-def imgapi_compile_gen_fn(net):
-    net.gen_fn = theano.function([net.latents_var, net.labels_var], net.images_expr, on_unused_input='ignore')
-'''
-'''
-def imgapi_generate_batch(net, latents, labels, minibatch_size=16, convert_to_uint8=False):
-    assert latents.shape[0] == labels.shape[0]
-    dtype = np.uint8 if convert_to_uint8 else np.float32
-    images = np.zeros((latents.shape[0],) + net.G.output_shape[1:], dtype=dtype)
-    for begin in xrange(0, latents.shape[0], minibatch_size):
-        end = min(begin + minibatch_size, latents.shape[0])
-        tmp = net.gen_fn(latents[begin:end], labels[begin:end])
-        if convert_to_uint8:
-            tmp = np.round(tmp).clip(0, 255).astype(np.uint8)
-        images[begin:end] = tmp
-    return images
-
-def imgapi_example(run_id, snapshot):
-    net = imgapi_load_net(run_id, snapshot, load_dataset=False)
-    images = net.gen_fn(net.example_latents[:1], net.example_labels[:1])
-    # latents: [minibatch, component], normalized automatically by the network, value represents a point on the unit hypersphere
-    # labels:  [minibatch, component], value depends on the dataset and training config
-    # images:  [minibatch, channel, height, width], dynamic range 0--255
-    misc.save_image(images[0], os.path.join(config.result_dir, 'debug.png'), drange=[0,255])
-'''
-#----------------------------------------------------------------------------
 
 if __name__ == "__main__":
     #指定随机种子
