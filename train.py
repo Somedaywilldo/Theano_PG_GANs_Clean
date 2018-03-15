@@ -135,18 +135,6 @@ def train_gan(
             image_grid_size = np.clip(1920 / w, 3, 16), np.clip(1080 / h, 2, 16)
         example_real_images, snapshot_fake_labels = training_set.get_random_minibatch(np.prod(image_grid_size), labels=True)
         snapshot_fake_latents = random_latents(np.prod(image_grid_size), G.input_shape)
-    elif image_grid_type == 'category':
-        W = training_set.labels.shape[1]
-        H = W if image_grid_size is None else image_grid_size[1]
-        image_grid_size = W, H
-        snapshot_fake_latents = random_latents(W*H, G.input_shape)
-        snapshot_fake_labels = np.zeros((W*H, W), dtype=training_set.labels.dtype)
-        example_real_images = np.zeros((W*H,) + training_set.shape[1:], dtype=training_set.dtype)
-        for x in xrange(W):
-            snapshot_fake_labels[x::W, x] = 1.0
-            indices = np.arange(training_set.shape[0])[training_set.labels[:,x] != 0]
-            for y in xrange(H):
-                example_real_images[x + y * W] = training_set.h5_lods[0][np.random.choice(indices)]
     else:
         raise ValueError('Invalid image_grid_type', image_grid_type)
 
@@ -370,17 +358,6 @@ def evaluate_loss(
         real_scores_out = T.constant(0) # reporting tweak
     
     return G_loss, D_loss, real_scores_out, fake_scores_out
-'''
-    if type == 'lsgan': # LSGAN
-        G_loss = L2(fake_scores_out, 0)
-        D_loss = L2(real_scores_out, 0) + L2(fake_scores_out, 1) * L2_fake_weight
-
-    if cond_type == 'acgan': # AC-GAN
-        G_loss += crossent(fake_labels_out, fake_labels_in) * cond_weight
-        D_loss += (crossent(real_labels_out, real_labels_in) + crossent(fake_labels_out, fake_labels_in)) * cond_weight
-'''
-
-   
 
 
 if __name__ == "__main__":
