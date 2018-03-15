@@ -1,3 +1,4 @@
+#coding=utf-8
 # Copyright (c) 2017, NVIDIA CORPORATION. All rights reserved.
 #
 # This work is licensed under the Creative Commons Attribution-NonCommercial
@@ -40,7 +41,8 @@ dataset = None
 
 train = dict(                               # Training parameters:
     func                    = 'train_gan',  # Main training func.
-    separate_funcs          = True,         # Alternate between training generator and discriminator?
+    separate_funcs          = False,         # Alternate between training generator and discriminator?
+    #修改为False减少了代码量
     D_training_repeats      = 1,            # n_{critic}
     G_learning_rate_max     = 0.001,        # \alpha
     D_learning_rate_max     = 0.001,        # \alpha
@@ -121,17 +123,8 @@ if 1:
         D.update(use_layernorm=True)
         loss.update(iwass_epsilon=0.0)
 
-    if config_idx == 0: # gulrajani-et-al-2017
-        train.update(lod_initial_resolution=128, lod_training_kimg=0, lod_transition_kimg=0)
-
-    if config_idx == 2: # small-minibatch
-        train.update(minibatch_default=16, G_smoothing=0.999**5)
-
     if config_idx < 4 or config_idx == 5: # without minibatch-stddev
         D.update(mbstat_avg=None)
-
-    if config_idx == 5: # minibatch-discrimination
-        D.update(mbdisc_kernels=100)
 
     if config_idx < 6: # without equalized-learning-rate
         train.update(G_learning_rate_max=0.0001, D_learning_rate_max=0.0001)
