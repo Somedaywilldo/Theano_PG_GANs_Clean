@@ -242,7 +242,7 @@ def train_gan(
         # Setup training func for current LOD.
         new_min_lod, new_max_lod = int(np.floor(cur_lod)), int(np.ceil(cur_lod))
 
-        print "min_lod %f\n new_min_lod %f\n max_lod %f\n new_max_lod %f\n"%(min_lod,new_min_lod,max_lod,new_max_lod)
+        print " cur_lod%f\n  min_lod %f\n new_min_lod %f\n max_lod %f\n new_max_lod %f\n"%(cur_lod,min_lod,new_min_lod,max_lod,new_max_lod)
 
 
         if min_lod != new_min_lod or max_lod != new_max_lod:
