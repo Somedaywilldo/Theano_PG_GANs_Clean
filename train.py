@@ -220,7 +220,8 @@ def train_gan(
             tlod = (cur_nimg / 1000.0) / (lod_training_kimg + lod_transition_kimg)
             cur_lod -= np.floor(tlod)
             if lod_transition_kimg:
-                cur_lod -= max(1.0 + (np.fmod(tlod, 1.0) - 1.0) * (lod_training_kimg + lod_transition_kimg) / lod_transition_kimg, 0.0)
+                cur_lod -= max(1.0 + (np.fmod(tlod, 1.0) - 1.0) * (lod_training_kimg + lod_transition_kimg) / lod_transition_kimg, 
+                                0.0)
             cur_lod = max(cur_lod, 0.0)
 
         # Look up resolution-dependent parameters.
@@ -240,6 +241,10 @@ def train_gan(
 
         # Setup training func for current LOD.
         new_min_lod, new_max_lod = int(np.floor(cur_lod)), int(np.ceil(cur_lod))
+
+        print "min_lod %f\n new_min_lod %f\n max_lod %f\n new_max_lod %f\n"%(min_lod,new_min_lod,max_lod,new_max_lod)
+
+
         if min_lod != new_min_lod or max_lod != new_max_lod:
             print 'Compiling training funcs...'
             min_lod, max_lod = new_min_lod, new_max_lod
