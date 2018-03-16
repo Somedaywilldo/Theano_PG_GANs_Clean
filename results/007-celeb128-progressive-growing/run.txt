@@ -1,0 +1,5 @@
+Date            2018-03-15 23:50:06.708592
+Device          cuda
+Working dir     /data/yyh/Theano_PG_GANs_Clean
+Executable      train.py
+Arguments       
