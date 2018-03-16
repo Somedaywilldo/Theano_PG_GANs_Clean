@@ -117,7 +117,10 @@ def train_gan(
     resume_time             = 0.0):
 
     # Load dataset and build networks.
-    training_set, drange_orig = load_dataset()
+    training_set, drange_orig = load_dataset() 
+    # training_set是dataset模块解析h5之后的对象，
+    # drange_orig 为training_set.get_dynamic_range()
+
     if resume_network_pkl:
         print 'Resuming', resume_network_pkl
         G, D, _ = misc.load_pkl(os.path.join(config.result_dir, resume_network_pkl))
@@ -125,10 +128,14 @@ def train_gan(
         G = network.Network(num_channels=training_set.shape[1], resolution=training_set.shape[2], label_size=training_set.labels.shape[1], **config.G)
         D = network.Network(num_channels=training_set.shape[1], resolution=training_set.shape[2], label_size=training_set.labels.shape[1], **config.D)
     Gs = G.create_temporally_smoothed_version(beta=G_smoothing, explicit_updates=True)
+    
+    # G,D对象可以由misc解析pkl之后生成，也可以由network模块构造
+
     misc.print_network_topology_info(G.output_layers)
     misc.print_network_topology_info(D.output_layers)
 
     # Setup snapshot image grid.
+    # 设置中途输出图片的格式
     if image_grid_type == 'default':
         if image_grid_size is None:
             w, h = G.output_shape[3], G.output_shape[2]
@@ -141,14 +148,38 @@ def train_gan(
     # Theano input variables and compile generation func.
     print 'Setting up Theano...'
     real_images_var  = T.TensorType('float32', [False] * len(D.input_shape))            ('real_images_var')
+    # <class 'theano.tensor.var.TensorVariable'>
+    # print type(real_images_var),real_images_var
     real_labels_var  = T.TensorType('float32', [False] * len(training_set.labels.shape))('real_labels_var')
     fake_latents_var = T.TensorType('float32', [False] * len(G.input_shape))            ('fake_latents_var')
     fake_labels_var  = T.TensorType('float32', [False] * len(training_set.labels.shape))('fake_labels_var')
+    # 带有_var的均为输入张量
     G_lrate = theano.shared(np.float32(0.0))
     D_lrate = theano.shared(np.float32(0.0))
+    # share语法就是用来设定默认值的，返回复制的对象
     gen_fn = theano.function([fake_latents_var, fake_labels_var], 
-                                Gs.eval_nd(fake_latents_var, fake_labels_var, ignore_unused_inputs=True), 
-                                on_unused_input='ignore')
+                            Gs.eval_nd(fake_latents_var, fake_labels_var, ignore_unused_inputs=True), 
+                            on_unused_input='ignore')
+    
+    # gen_fn 是一个函数，输入为：[fake_latents_var, fake_labels_var],  
+    #                  输出位：Gs.eval_nd(fake_latents_var, fake_labels_var, ignore_unused_inputs=True), 
+
+    
+    '''
+    def function(inputs, 
+                outputs=None, 
+                mode=None, 
+                updates=None, 
+                givens=None, 
+                no_default_updates=False, 
+                accept_inplace=False, 
+                name=None, 
+                rebuild_strict=True, 
+                allow_input_downcast=None, 
+                profile=None, 
+                on_unused_input=None)
+    '''
+    
     #生成函数
 
     # Misc init.
@@ -160,8 +191,10 @@ def train_gan(
     min_lod, max_lod = -1.0, -2.0
     fake_score_avg = 0.0
 
+    '''
     if config.D.get('mbdisc_kernels', None):
         print 'Initializing minibatch discrimination...'
+        print "*"*10000000000000000000000000000
         #现有精细度
         if hasattr(D, 'cur_lod'): D.cur_lod.set_value(np.float32(initial_lod))
         D.eval(real_images_var, deterministic=False, init=True)
@@ -172,7 +205,8 @@ def train_gan(
         init_reals = misc.adjust_dynamic_range(init_reals, drange_orig, drange_net)
         init_fn(init_reals)
         del init_reals
-
+    '''
+    
     # Save example images.
     snapshot_fake_images = gen_fn(snapshot_fake_latents, snapshot_fake_labels)
     result_subdir = misc.create_result_subdir(config.result_dir, config.run_desc)
@@ -180,7 +214,8 @@ def train_gan(
     misc.save_image_grid(snapshot_fake_images, os.path.join(result_subdir, 'fakes%06d.png' % 0), drange=drange_viz, grid_size=image_grid_size)
 
     # Training loop.
-    #这里才是主训练入口
+    # 这里才是主训练入口
+    # 注意在训练过程中不会跳出最外层while循环，因此更换分辨率等操作必然在while循环里
 
     #现有图片数
     cur_nimg = int(resume_kimg * 1000)
