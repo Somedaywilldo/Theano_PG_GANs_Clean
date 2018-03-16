@@ -35,6 +35,8 @@ import dataset
 #----------------------------------------------------------------------------
 # Convenience.
 
+speed_factor = 10
+
 def Tsum (*args, **kwargs): return T.sum (*args, dtype=theano.config.floatX, acc_dtype=theano.config.floatX, **kwargs)
 def Tmean(*args, **kwargs): return T.mean(*args, dtype=theano.config.floatX, acc_dtype=theano.config.floatX, **kwargs)
 
@@ -91,14 +93,14 @@ def train_gan(
     adam_epsilon            = 1e-8,
     minibatch_default       = 16,
     minibatch_overrides     = {},
-    rampup_kimg             = 40/5,
+    rampup_kimg             = 40/speed_factor,
     rampdown_kimg           = 0,
     lod_initial_resolution  = 4,
-    lod_training_kimg       = 400/5,
-    lod_transition_kimg     = 400/5,
+    lod_training_kimg       = 400/speed_factor,
+    lod_transition_kimg     = 400/speed_factor,
     #lod_training_kimg       = 40,
     #lod_transition_kimg     = 40,
-    total_kimg              = 10000/5,
+    total_kimg              = 10000/speed_factor,
     dequantize_reals        = False,
     gdrop_beta              = 0.9,
     gdrop_lim               = 0.5,
@@ -108,9 +110,9 @@ def train_gan(
     drange_viz              = [-1,1],
     image_grid_size         = None,
     #tick_kimg_default       = 1,
-    tick_kimg_default       = 50/5,
+    tick_kimg_default       = 50/speed_factor,
     tick_kimg_overrides     = {32:20, 64:10, 128:10, 256:5, 512:2, 1024:1},
-    image_snapshot_ticks    = 4,
+    image_snapshot_ticks    = 4/speed_factor,
     network_snapshot_ticks  = 40,
     image_grid_type         = 'default',
     #resume_network_pkl      = '006-celeb128-progressive-growing/network-snapshot-002009.pkl',
@@ -217,7 +219,7 @@ def train_gan(
         #计算当前精细度
         cur_lod = initial_lod
         if lod_training_kimg or lod_transition_kimg:
-            tlod = (cur_nimg / (1000.0/5) ) / (lod_training_kimg + lod_transition_kimg)
+            tlod = (cur_nimg / (1000.0/speed_factor) ) / (lod_training_kimg + lod_transition_kimg)
             cur_lod -= np.floor(tlod)
             if lod_transition_kimg:
                 cur_lod -= max(1.0 + (np.fmod(tlod, 1.0) - 1.0) * (lod_training_kimg + lod_transition_kimg) / lod_transition_kimg, 
@@ -242,7 +244,7 @@ def train_gan(
         # Setup training func for current LOD.
         new_min_lod, new_max_lod = int(np.floor(cur_lod)), int(np.ceil(cur_lod))
 
-        print " cur_lod%f\n  min_lod %f\n new_min_lod %f\n max_lod %f\n new_max_lod %f\n"%(cur_lod,min_lod,new_min_lod,max_lod,new_max_lod)
+        #print " cur_lod%f\n  min_lod %f\n new_min_lod %f\n max_lod %f\n new_max_lod %f\n"%(cur_lod,min_lod,new_min_lod,max_lod,new_max_lod)
 
 
         if min_lod != new_min_lod or max_lod != new_max_lod:
