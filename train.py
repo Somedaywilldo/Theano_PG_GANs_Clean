@@ -191,22 +191,6 @@ def train_gan(
     min_lod, max_lod = -1.0, -2.0
     fake_score_avg = 0.0
 
-    '''
-    if config.D.get('mbdisc_kernels', None):
-        print 'Initializing minibatch discrimination...'
-        print "*"*10000000000000000000000000000
-        #现有精细度
-        if hasattr(D, 'cur_lod'): D.cur_lod.set_value(np.float32(initial_lod))
-        D.eval(real_images_var, deterministic=False, init=True)
-        init_layers = lasagne.layers.get_all_layers(D.output_layers)
-        init_updates = [update for layer in init_layers for update in getattr(layer, 'init_updates', [])]
-        init_fn = theano.function(inputs=[real_images_var], outputs=None, updates=init_updates)
-        init_reals = training_set.get_random_minibatch(500, lod=initial_lod)
-        init_reals = misc.adjust_dynamic_range(init_reals, drange_orig, drange_net)
-        init_fn(init_reals)
-        del init_reals
-    '''
-    
     # Save example images.
     snapshot_fake_images = gen_fn(snapshot_fake_latents, snapshot_fake_labels)
     result_subdir = misc.create_result_subdir(config.result_dir, config.run_desc)
