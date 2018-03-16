@@ -112,7 +112,7 @@ def train_gan(
     #tick_kimg_default       = 1,
     tick_kimg_default       = 50/speed_factor,
     tick_kimg_overrides     = {32:20, 64:10, 128:10, 256:5, 512:2, 1024:1},
-    image_snapshot_ticks    = 4/speed_factor,
+    image_snapshot_ticks    = 4,
     network_snapshot_ticks  = 40,
     image_grid_type         = 'default',
     #resume_network_pkl      = '006-celeb128-progressive-growing/network-snapshot-002009.pkl',
