@@ -91,14 +91,14 @@ def train_gan(
     adam_epsilon            = 1e-8,
     minibatch_default       = 16,
     minibatch_overrides     = {},
-    rampup_kimg             = 40/2,
+    rampup_kimg             = 40/5,
     rampdown_kimg           = 0,
     lod_initial_resolution  = 4,
-    lod_training_kimg       = 400/2,
-    lod_transition_kimg     = 400/2,
+    lod_training_kimg       = 400/5,
+    lod_transition_kimg     = 400/5,
     #lod_training_kimg       = 40,
     #lod_transition_kimg     = 40,
-    total_kimg              = 10000/2,
+    total_kimg              = 10000/5,
     dequantize_reals        = False,
     gdrop_beta              = 0.9,
     gdrop_lim               = 0.5,
@@ -217,7 +217,7 @@ def train_gan(
         #计算当前精细度
         cur_lod = initial_lod
         if lod_training_kimg or lod_transition_kimg:
-            tlod = (cur_nimg / 1000.0) / (lod_training_kimg + lod_transition_kimg)
+            tlod = (cur_nimg / (1000.0/5) ) / (lod_training_kimg + lod_transition_kimg)
             cur_lod -= np.floor(tlod)
             if lod_transition_kimg:
                 cur_lod -= max(1.0 + (np.fmod(tlod, 1.0) - 1.0) * (lod_training_kimg + lod_transition_kimg) / lod_transition_kimg, 
