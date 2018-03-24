@@ -1,0 +1,5 @@
+Date            2018-03-24 11:19:30.578229
+Device          cuda
+Working dir     /Users/mac/Desktop/Theano_PG_GANs_Clean
+Executable      train_less.py
+Arguments       

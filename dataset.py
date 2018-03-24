@@ -1,3 +1,5 @@
+#coding=utf-8
+
 # Copyright (c) 2017, NVIDIA CORPORATION. All rights reserved.
 #
 # This work is licensed under the Creative Commons Attribution-NonCommercial
@@ -134,7 +136,11 @@ class Dataset:
         # Apply fractional LOD.
         if lod != lod_int:
             n, c, h, w = data.shape
+
+            print "USE ******************************************"
+
             t = data.reshape(n, c, h/2, 2, w/2, 2).mean((3, 5)).repeat(2, 2).repeat(2, 3)
+            #读懂这句话基本就完事了
             data = (data + (t - data) * (lod - lod_int)).astype(self.dtype)
         if not shrink_based_on_lod and lod_int != 0:
             data = data.repeat(2 ** lod_int, 2).repeat(2 ** lod_int, 3)
