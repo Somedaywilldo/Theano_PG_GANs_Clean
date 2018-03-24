@@ -133,23 +133,21 @@ class Dataset:
             mask = np.random.rand(data.shape[0]) < 0.5
             data[mask] = data[mask, :, :, ::-1]
 
-        print "Original shape ******************************************"
-        print data.shape
-
         # Apply fractional LOD.
         if lod != lod_int:
             n, c, h, w = data.shape
-
+            print "Original shape ******************************************"
+            print data.shape
             t = data.reshape(n, c, h/2, 2, w/2, 2).mean((3, 5)).repeat(2, 2).repeat(2, 3)
-
+            print "Change shape ******************************************"
+            print data.shape
             data = (data + (t - data) * (lod - lod_int)).astype(self.dtype)
         if not shrink_based_on_lod and lod_int != 0:
             data = data.repeat(2 ** lod_int, 2).repeat(2 ** lod_int, 3)
 
         # Look up labels.
 
-        print "Change shape ******************************************"
-        print data.shape
+        
         
         if labels:
             return data, self.labels[orig_indices]
