@@ -143,14 +143,14 @@ class Dataset:
             data = data.repeat(2 ** lod_int, 2).repeat(2 ** lod_int, 3)
 
         # Look up labels.
-        
+        '''
         print "Original shape ******************************************"
         print data.shape
         data=np.swapaxes(data,1,2)
         data=np.swapaxes(data,2,3)
         print "Change shape ******************************************"
         print data.shape
-        
+        '''
         
         if labels:
             return data, self.labels[orig_indices]
